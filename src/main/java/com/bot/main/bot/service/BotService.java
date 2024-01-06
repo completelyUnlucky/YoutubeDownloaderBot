@@ -110,13 +110,7 @@ public class BotService extends TelegramLongPollingBot {
     private void sendVideo(long chatId, String videoURL) {
         try {
             VideoService downloadVideo = new VideoService();
-            String videoId = null;
-
-            if (videoURL.split("/")[2].equals("www.youtube.com")) {
-                videoId = videoURL.substring(videoURL.indexOf("v")+2, videoURL.indexOf("&"));
-            } else if (videoURL.split("/")[2].equals("youtu.be")) {
-                videoId = videoURL.substring(videoURL.indexOf(".")+4, videoURL.indexOf("?"));
-            }
+            String videoId = getVideoId(videoURL);
             downloadVideo.download(videoId);
 
             InputFile videoFile = new InputFile(new File("/home/boris/IdeaProjects/bot/videos/video.mp4"),
@@ -141,5 +135,29 @@ public class BotService extends TelegramLongPollingBot {
         } catch (NullPointerException e) {
             sendMessage(chatId, "This is not YouTube URL. Please enter a valid URL.");
         }
+    }
+
+    private static String getVideoId(String videoURL) {
+        String videoId = null;
+        try {
+
+            if (videoURL.split("/")[2].equals("www.youtube.com")) {
+                try {
+                    videoId = videoURL.substring(videoURL.indexOf("v") + 2, videoURL.indexOf("&"));
+                } catch (StringIndexOutOfBoundsException e) {
+                    videoId = videoURL.substring(videoURL.indexOf("v") + 2);
+                }
+            } else if (videoURL.split("/")[2].equals("youtu.be")) {
+                try {
+                    videoId = videoURL.substring(videoURL.indexOf(".") + 4, videoURL.indexOf("?"));
+                } catch (StringIndexOutOfBoundsException e) {
+                    videoId = videoURL.substring(videoURL.indexOf(".") + 4);
+                }
+            }
+        }
+        catch (ArrayIndexOutOfBoundsException e) {
+            return null;
+        }
+        return videoId;
     }
 }
